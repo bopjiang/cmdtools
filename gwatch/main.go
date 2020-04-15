@@ -8,7 +8,6 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
-	"strings"
 	"syscall"
 	"time"
 )
@@ -17,8 +16,12 @@ func run() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
 	defer cancel()
 
-	paras := []string{"-c", fmt.Sprintf(`"%s"`, strings.Join(os.Args[1:], " "))}
-	cmd := exec.CommandContext(ctx, "bash", paras...)
+	var paras []string
+	if len(os.Args) > 2 {
+		paras = os.Args[2:]
+	}
+
+	cmd := exec.CommandContext(ctx, os.Args[1], paras...)
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
@@ -46,6 +49,11 @@ func run() {
 }
 
 func main() {
+	if len(os.Args) < 2 {
+		fmt.Printf("no enough argument")
+		return
+	}
+
 	closeSignalChan := make(chan os.Signal, 1)
 	signal.Notify(closeSignalChan,
 		syscall.SIGHUP,
