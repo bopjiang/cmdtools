@@ -7,7 +7,9 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"os/signal"
 	"strings"
+	"syscall"
 	"time"
 )
 
@@ -44,11 +46,20 @@ func run() {
 }
 
 func main() {
+	closeSignalChan := make(chan os.Signal, 1)
+	signal.Notify(closeSignalChan,
+		syscall.SIGHUP,
+		syscall.SIGINT,
+		syscall.SIGTERM,
+		syscall.SIGQUIT)
+
 	t := time.NewTicker(time.Second)
 	for {
 		select {
 		case <-t.C:
 			run()
+		case <-closeSignalChan:
+			os.Exit(0)
 		}
 	}
 }
