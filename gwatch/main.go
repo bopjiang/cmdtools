@@ -3,9 +3,11 @@ package main
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
+	"strings"
 	"time"
 )
 
@@ -13,8 +15,7 @@ func run() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
 	defer cancel()
 
-	paras := []string{"-c"}
-	paras = append(paras, os.Args[1:]...)
+	paras := []string{"-c", fmt.Sprintf(`"%s"`, strings.Join(os.Args[1:], " "))}
 	cmd := exec.CommandContext(ctx, "bash", paras...)
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
@@ -40,8 +41,6 @@ func run() {
 	if errStr != "" {
 		log.Printf("stderr: %s", errStr)
 	}
-
-	log.Println()
 }
 
 func main() {
